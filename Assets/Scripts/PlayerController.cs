@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] public float stopDuration = 0.25f;
     [SerializeField] public float runAcceleration = 1.5f;
     [SerializeField] public float smoothness = .03f;
+    [SerializeField] public float rotateSmoothness = .04f;
 
     [Header("Dash")]
     [SerializeField] public float dashAcceleration = 2f;
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour {
     private Vector3 inputDirection;
     private Vector3 currentDirection;
     private Vector3 lastDirection;
+    private float currentRotation;
 
     public Vector3 GetDirection() => inputDirection;
     public Vector3 GetLastDirection() => lastDirection;
@@ -43,6 +45,10 @@ public class PlayerController : MonoBehaviour {
 
         stateMachine.currentState.HandleInput();
         stateMachine.currentState.LogicUpdate();
+
+        if (IsMoving()) {
+            Rotate();
+        }
     }
 
     void FixedUpdate() {
@@ -78,5 +84,11 @@ public class PlayerController : MonoBehaviour {
     public void Move(float speed, Vector3 direction, float acceleration) {
         var destination = direction * speed * acceleration * Time.deltaTime;
         controller.Move(destination);
+    }
+
+    void Rotate() {
+        var angle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg;
+        currentRotation = Mathf.LerpAngle(transform.rotation.eulerAngles.y, angle, rotateSmoothness);
+        transform.rotation = Quaternion.Euler(0, currentRotation, 0);
     }
 }
